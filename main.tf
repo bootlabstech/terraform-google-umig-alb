@@ -79,12 +79,12 @@ resource "google_compute_global_forwarding_rule" "forwarding_rule" {
 
 resource "google_compute_target_https_proxy" "target-proxy" {
   project = var.project_id
-  ssl_certificates = var.ssl_certificates
+  ssl_certificates = var.is_prod_project ? [google_compute_ssl_certificate.prod.id] : [google_compute_ssl_certificate.non-prod.id]
   name    = "${var.name}-target-proxy"
   url_map = google_compute_url_map.url_map.id
   depends_on = [
-    # google_compute_ssl_certificate.non-prod,
-    # google_compute_ssl_certificate.prod,
+    google_compute_ssl_certificate.non-prod,
+    google_compute_ssl_certificate.prod,
     google_compute_url_map.url_map
   ]
   
@@ -98,4 +98,19 @@ resource "google_compute_url_map" "url_map" {
     google_compute_backend_service.default
   ]
 }
+
+
+resource "google_compute_ssl_certificate" "non-prod" {
+  project = var.project_id
+  name        = "m-devsecops-com-1"
+  private_key = file ("m-devsecops.com.key.txt")
+  certificate = file ("m-devsecops.com.cer.txt")
+}
+resource "google_compute_ssl_certificate" "prod" {
+  project = var.project_id
+  name        = "mahindra-com-1"
+  private_key = file ("mahindrawildcard3_18_2024key.pem")
+  certificate = file ("mahindrawildcard3_18_2024certs.pem")
+}
+
 
