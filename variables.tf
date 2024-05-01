@@ -44,7 +44,7 @@ variable "enable_named_port" {
   description = "enable the port"
   default     = false
 }
-variable "is_prod_project" {
-    type=bool
+variable "ssl_certificates" {
+    type=list(string)
     description = "SSL certificate"     
 }
