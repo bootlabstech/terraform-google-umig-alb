@@ -50,9 +50,9 @@ resource "google_compute_backend_service" "default" {
   name                            = "${var.name}-back-end"
   connection_draining_timeout_sec = 0
   health_checks                   = [google_compute_health_check.default.id]
-  load_balancing_scheme           = "EXTERNAL"
+  load_balancing_scheme           = var.load_balancing_scheme
   port_name                       = "https"
-  protocol                        = "HTTPS"
+  protocol                        = var.protocol
   session_affinity                = "NONE"
   timeout_sec                     = 30
   backend {
@@ -70,7 +70,7 @@ resource "google_compute_global_forwarding_rule" "forwarding_rule" {
   name                  = "${var.name}-forwarding-rule"
   target                = google_compute_target_https_proxy.target-proxy.id
   ip_protocol           = "TCP"
-  load_balancing_scheme = "EXTERNAL"
+  load_balancing_scheme = var.load_balancing_scheme
   port_range            = "443"
   ip_address            = google_compute_global_address.default.address
    depends_on = [

@@ -48,3 +48,15 @@ variable "ssl_certificates" {
     type=list(string)
     description = "SSL certificate"     
 }
+variable "protocol" {
+  type = string
+  description = "protocol for data "
+  default = "HTTPS"
+  
+}
+variable "load_balancing_scheme" {
+  type = string
+  description = "type of alb external or internal"
+  default = "EXTERNAL"
+  
+}
