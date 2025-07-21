@@ -18,7 +18,7 @@ resource "google_compute_instance_group" "instance_group" {
     }
   }
   named_port {
-          name = "https" 
+          name = "http" 
           port = var.port
         }
    

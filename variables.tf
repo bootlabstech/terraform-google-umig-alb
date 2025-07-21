@@ -57,6 +57,6 @@ variable "protocol" {
 variable "load_balancing_scheme" {
   type = string
   description = "type of alb external or internal"
-  default = "EXTERNAL"
+  default = "EXTERNAL_MANAGED"
   
 }
