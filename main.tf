@@ -13,7 +13,7 @@ resource "google_compute_instance_group" "instance_group" {
   dynamic "named_port" {
     for_each = var.enable_named_port ? [{}] : []
     content {
-      name = "https"
+      name = var.named_port_name
       port = var.port
     }
   }
@@ -51,7 +51,7 @@ resource "google_compute_backend_service" "default" {
   connection_draining_timeout_sec = 0
   health_checks                   = [google_compute_health_check.default.id]
   load_balancing_scheme           = var.load_balancing_scheme
-  port_name                       = "https"
+  port_name                       = var.backend_port_name
   protocol                        = var.protocol
   session_affinity                = "NONE"
   timeout_sec                     = 30
@@ -98,6 +98,9 @@ resource "google_compute_url_map" "url_map" {
   depends_on = [
     google_compute_backend_service.default
   ]
+  lifecycle {
+    ignore_changes = [ host_rule, path_matcher, ]
+  }
 }
 resource "google_compute_security_policy" "policy" { 
      name = "${var.name}-cloud-policy"
@@ -157,8 +160,6 @@ resource "google_compute_security_policy" "policy" {
                 }
             }
         }
-
-        # (1 unchanged block hidden)
     }
 
 

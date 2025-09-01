@@ -29,10 +29,15 @@ variable "port" {
 
 
 }
-variable "named_port_name_port" {
+variable "named_port_name" {
   type        = string
   description = "The port number to map the name to."
-  default     = "https"
+  default     = "http"
+}
+variable "backend_port_name" {
+  type = string
+  description = "backend port name"
+  default = "http"
 }
 variable "instances" {
   type        = list(string)
@@ -51,7 +56,7 @@ variable "ssl_certificates" {
 variable "protocol" {
   type = string
   description = "protocol for data "
-  default = "HTTPS"
+  default = "HTTP"
   
 }
 variable "load_balancing_scheme" {
