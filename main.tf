@@ -18,20 +18,20 @@ resource "google_compute_instance_group" "instance_group" {
     }
   }
   named_port {
-          name = "http" 
-          port = var.port
-        }
-   
+    name = var.named_port_name
+    port = var.port
+  }
+
 }
 
 resource "google_compute_global_address" "default" {
   project      = var.project_id
-  name       = "${var.name}-ip"
-  ip_version = "IPV4"
+  name         = "${var.name}-ip"
+  ip_version   = "IPV4"
   address_type = "EXTERNAL"
 }
 resource "google_compute_health_check" "default" {
-    project         = var.project_id
+  project            = var.project_id
   name               = "${var.name}-health-check"
   check_interval_sec = 5
   healthy_threshold  = 2
@@ -39,14 +39,14 @@ resource "google_compute_health_check" "default" {
     port               = var.port
     port_specification = "USE_FIXED_PORT"
     proxy_header       = "PROXY_V1"
-    
+
   }
   timeout_sec         = 5
   unhealthy_threshold = 2
 }
 
 resource "google_compute_backend_service" "default" {
-  project               = var.project_id
+  project                         = var.project_id
   name                            = "${var.name}-back-end"
   connection_draining_timeout_sec = 0
   health_checks                   = [google_compute_health_check.default.id]
@@ -59,8 +59,8 @@ resource "google_compute_backend_service" "default" {
     group           = google_compute_instance_group.instance_group.id
     balancing_mode  = "UTILIZATION"
     capacity_scaler = 1.0
-    max_utilization  = 0.8
-    
+    max_utilization = 0.8
+
   }
   security_policy = google_compute_security_policy.policy.id
 }
@@ -69,26 +69,26 @@ resource "google_compute_global_forwarding_rule" "forwarding_rule" {
   project               = var.project_id
   name                  = "${var.name}-forwarding-rule"
   target                = google_compute_target_https_proxy.target-proxy.id
-  ip_protocol           = "TCP"
+  ip_protocol           = var.fw_ip_protocol
   load_balancing_scheme = var.load_balancing_scheme
-  port_range            = "443"
+  port_range            = var.fw_port_range
   ip_address            = google_compute_global_address.default.address
-   depends_on = [
+  depends_on = [
     google_compute_target_https_proxy.target-proxy
   ]
 }
 
 resource "google_compute_target_https_proxy" "target-proxy" {
-  project = var.project_id
-  ssl_certificates = var.ssl_certificates 
-  name    = "${var.name}-target-proxy"
-  url_map = google_compute_url_map.url_map.id
+  project          = var.project_id
+  ssl_certificates = var.ssl_certificates
+  name             = "${var.name}-target-proxy"
+  url_map          = google_compute_url_map.url_map.id
   depends_on = [
     # google_compute_ssl_certificate.non-prod,
     # google_compute_ssl_certificate.prod,
     google_compute_url_map.url_map
   ]
-  
+
 }
 
 resource "google_compute_url_map" "url_map" {
@@ -99,69 +99,65 @@ resource "google_compute_url_map" "url_map" {
     google_compute_backend_service.default
   ]
   lifecycle {
-    ignore_changes = [ host_rule, path_matcher, ]
+    ignore_changes = [host_rule, path_matcher, ]
   }
 }
-resource "google_compute_security_policy" "policy" { 
-     name = "${var.name}-cloud-policy"
-     project = var.project_id
-       rule {
-            action   = "deny(403)"
-           priority = "2147483647"
-            match {
-           versioned_expr = "SRC_IPS_V1"
-          config {
-               src_ip_ranges = ["*"]
-           }
-           }
-           description = "default rule"
-       }
-        rule {
-           action   = "allow" 
-           preview  = false 
-           priority = 1000 
-
-           match {
-              versioned_expr = "SRC_IPS_V1" 
-
-               config {
-                   src_ip_ranges = [
-                       "103.21.244.0/22",
-                      "103.22.200.0/22",
-                       "103.31.4.0/22",
-                       "108.162.192.0/18",
-                       "141.101.64.0/18",
-                       "173.245.48.0/20",
-                       "188.114.96.0/20",
-                       "190.93.240.0/20",
-                       "197.234.240.0/22",
-                       "198.41.128.0/17",
-                    ] 
-                }
-            }
-        }
-        rule {
-           action      = "allow" 
-           description = "rule 2" 
-           preview     = false 
-           priority    = 1001 
-
-           match {
-               versioned_expr = "SRC_IPS_V1" 
-
-               config {
-                   src_ip_ranges = [
-                       "104.16.0.0/13",
-                       "104.24.0.0/14",
-                       "131.0.72.0/22",
-                       "162.158.0.0/15",
-                       "172.64.0.0/13",
-                    ] 
-                }
-            }
-        }
+resource "google_compute_security_policy" "policy" {
+  name    = "${var.name}-cloud-policy"
+  project = var.project_id
+  rule {
+    action   = "deny(403)"
+    priority = "2147483647"
+    match {
+      versioned_expr = "SRC_IPS_V1"
+      config {
+        src_ip_ranges = ["*"]
+      }
     }
+    description = "default rule"
+  }
+  rule {
+    action   = "allow"
+    preview  = false
+    priority = 1000
 
+    match {
+      versioned_expr = "SRC_IPS_V1"
 
+      config {
+        src_ip_ranges = [
+          "103.21.244.0/22",
+          "103.22.200.0/22",
+          "103.31.4.0/22",
+          "108.162.192.0/18",
+          "141.101.64.0/18",
+          "173.245.48.0/20",
+          "188.114.96.0/20",
+          "190.93.240.0/20",
+          "197.234.240.0/22",
+          "198.41.128.0/17",
+        ]
+      }
+    }
+  }
+  rule {
+    action      = "allow"
+    description = "rule 2"
+    preview     = false
+    priority    = 1001
 
+    match {
+      versioned_expr = "SRC_IPS_V1"
 
+      config {
+        src_ip_ranges = [
+          "104.16.0.0/13",
+          "104.24.0.0/14",
+          "131.0.72.0/22",
+          "162.158.0.0/15",
+          "172.64.0.0/13",
+        ]
+      }
+    }
+  }
+}

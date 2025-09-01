@@ -1,32 +1,41 @@
 variable "name" {
   type        = string
   description = "The name of the instance group"
-  
+
 }
 variable "description" {
   type        = string
   description = "description of the instance group"
-  default = "Application load balancer for unmanaged instance"
+  default     = "Application load balancer for unmanaged instance"
 }
 variable "zone" {
   type        = string
   description = "The zone that this instance group should be created in."
-  
+
 }
 variable "project_id" {
   type        = string
   description = " The ID of the project in which the resource belongs. If it is not provided, the provider project is used."
-  
+
 }
 variable "network" {
   type        = string
   description = "The URL of the network the instance group is in. If this is different from the network where the instances are in, the creation fails."
+}
 
+variable "fw_ip_protocol" {
+  type        = string
+  description = "the protocol for the global forwarding rule"
+  default     = "TCP"
+}
+variable "fw_port_range" {
+  type        = string
+  description = "forwarding port range"
+  default     = "443"
 }
 variable "port" {
   type        = string
   description = "The name which the port will be mapped to."
-
 
 }
 variable "named_port_name" {
@@ -35,9 +44,9 @@ variable "named_port_name" {
   default     = "http"
 }
 variable "backend_port_name" {
-  type = string
+  type        = string
   description = "backend port name"
-  default = "http"
+  default     = "http"
 }
 variable "instances" {
   type        = list(string)
@@ -50,18 +59,18 @@ variable "enable_named_port" {
   default     = false
 }
 variable "ssl_certificates" {
-    type=list(string)
-    description = "SSL certificate"     
+  type        = list(string)
+  description = "SSL certificate"
 }
 variable "protocol" {
-  type = string
+  type        = string
   description = "protocol for data "
-  default = "HTTP"
-  
+  default     = "HTTP"
+
 }
 variable "load_balancing_scheme" {
-  type = string
+  type        = string
   description = "type of alb external or internal"
-  default = "EXTERNAL_MANAGED"
-  
+  default     = "EXTERNAL_MANAGED"
+
 }
