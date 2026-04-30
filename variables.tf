@@ -1,76 +1,80 @@
-variable "name" {
-  type        = string
-  description = "The name of the instance group"
-
-}
-variable "description" {
-  type        = string
-  description = "description of the instance group"
-  default     = "Application load balancer for unmanaged instance"
-}
-variable "zone" {
-  type        = string
-  description = "The zone that this instance group should be created in."
-
-}
+# -----------------------------
+# COMMON VARIABLES
+# -----------------------------
 variable "project_id" {
+  description = "The GCP project ID where all load balancer resources will be created."
   type        = string
-  description = " The ID of the project in which the resource belongs. If it is not provided, the provider project is used."
-
-}
-variable "network" {
-  type        = string
-  description = "The URL of the network the instance group is in. If this is different from the network where the instances are in, the creation fails."
 }
 
-variable "fw_ip_protocol" {
+variable "name" {
+  description = "Base name used as a prefix for all load balancer resources."
   type        = string
-  description = "the protocol for the global forwarding rule"
-  default     = "TCP"
 }
-variable "fw_port_range" {
-  type        = string
-  description = "forwarding port range"
-  default     = "443"
-}
-variable "port" {
-  type        = string
-  description = "The name which the port will be mapped to."
 
-}
-variable "named_port_name" {
+variable "lb_type" {
+  description = "Type of load balancer to create. Supported values: 'internal' or 'external'."
   type        = string
-  description = "The port number to map the name to."
-  default     = "http"
+
+  validation {
+    condition     = contains(["internal", "external"], var.lb_type)
+    error_message = "The lb_type value must be either 'internal' or 'external'."
+  }
 }
-variable "backend_port_name" {
+
+variable "zone" {
+  description = "Zone where the backend VM instances are running (used for unmanaged instance group)."
   type        = string
-  description = "backend port name"
-  default     = "http"
 }
+
 variable "instances" {
+  description = "List of backend VM instance self-links to attach to the instance group."
   type        = list(string)
-  description = "The list of instances in the group, in self_link format. When adding instances they must all be in the same network and zone as the instance group."
+}
 
+variable "network" {
+  description = "VPC network self-link or name where the load balancer will be deployed."
+  type        = string
 }
-variable "enable_named_port" {
-  type        = bool
-  description = "enable the port"
-  default     = false
+
+variable "port" {
+  description = "Port on which backend application is running on the VM instances."
+  type        = number
 }
-variable "ssl_certificates" {
-  type        = list(string)
-  description = "SSL certificate"
+
+variable "backend_port_name" {
+  description = "Port name used by the backend service. Must match the named port defined in the instance group."
+  type        = string
 }
+
 variable "protocol" {
+  description = "Protocol used by the backend service (e.g., HTTP, HTTPS, TCP)."
   type        = string
-  description = "protocol for data "
-  default     = "HTTP"
-
 }
-variable "load_balancing_scheme" {
-  type        = string
-  description = "type of alb external or internal"
-  default     = "EXTERNAL_MANAGED"
 
+variable "existing_ssl_name" {
+  description = "List of SSL certificate self-links. Use REGIONAL certificates for internal LB and GLOBAL certificates for external LB."
+  type        = string
+}
+
+# -----------------------------
+# INTERNAL LB (ONLY USED IF lb_type = internal)
+# -----------------------------
+variable "region" {
+  description = "Region where internal load balancer resources will be created. Required only when lb_type is 'internal'."
+  type        = string
+}
+
+variable "subnetwork" {
+  description = "Subnetwork self-link where the internal load balancer IP will be allocated. Required only for internal LB."
+  type        = string
+  default     = null
+}
+
+# -----------------------------
+# EXTERNAL LB (ONLY USED IF lb_type = external)
+# -----------------------------
+variable "external_ip_address" {
+  description = "Optional existing global external IP address to use for the external load balancer. If not provided, a new one will be created."
+  type        = string
+  default     = null
 }
