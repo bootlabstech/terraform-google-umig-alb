@@ -1,6 +1,7 @@
 resource "google_project_service" "certapi" {
   project = var.project_id
   service = "certificatemanager.googleapis.com"
+  disable_on_destroy = false
 }
 
 # -----------------------------
