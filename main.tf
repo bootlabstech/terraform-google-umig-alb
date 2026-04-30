@@ -141,7 +141,7 @@ resource "google_compute_target_https_proxy" "external_proxy" {
   project          = var.project_id
   name             = "${var.name}-proxy"
   url_map          = google_compute_url_map.external_url_map[0].id
-  ssl_certificates = [data.google_compute_ssl_certificate.external_ssl[0].self_link]
+  ssl_certificates = local.is_external ? [data.google_compute_ssl_certificate.external_ssl[0].self_link] : []
 }
 
 resource "google_compute_region_target_https_proxy" "internal_proxy" {
@@ -150,7 +150,7 @@ resource "google_compute_region_target_https_proxy" "internal_proxy" {
   region           = var.region
   name             = "${var.name}-proxy"
   url_map          = google_compute_region_url_map.internal_url_map[0].id
-  ssl_certificates = [data.google_compute_region_ssl_certificate.internal_ssl[0].self_link]
+  ssl_certificates = local.is_internal ? [data.google_compute_region_ssl_certificate.internal_ssl[0].self_link] : []
 }
 
 # -----------------------------
